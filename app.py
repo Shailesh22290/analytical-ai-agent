@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Analytical AI Agent - Streamlit Multi-CSV Query Interface with Vector DB Persistence
+Analytical AI Agent - Streamlit 
 Run with: streamlit run app.py
 """
 import streamlit as st
@@ -14,18 +14,21 @@ import numpy as np
 import uuid 
 import hashlib
 from src.agents.ingestion import csv_ingestion
+from src.agents.document_ingestion import document_ingestion
 from src.agents.analytical_agent import analytical_agent
 
 # Page config
 st.set_page_config(
     page_title="Analytical AI Agent",
-    page_icon="🔍",
+    page_icon="📊",
     layout="wide"
 )
 
 # Initialize session state
 if 'loaded_files' not in st.session_state:
     st.session_state.loaded_files = []
+if 'loaded_documents' not in st.session_state:
+    st.session_state.loaded_documents = []
 if 'query_history' not in st.session_state:
     st.session_state.query_history = []
 if 'cleaning_options' not in st.session_state:
@@ -51,11 +54,8 @@ def get_vector_db_info():
         if not db_path.exists():
             return {'exists': False, 'collections': 0, 'size_mb': 0}
         
-        # Check if vector DB has data
         size_bytes = sum(f.stat().st_size for f in db_path.rglob('*') if f.is_file())
         size_mb = size_bytes / 1024 / 1024
-        
-        # Try to count collections/files
         collections = len([d for d in db_path.iterdir() if d.is_dir()])
         
         return {
@@ -87,17 +87,12 @@ def clean_numeric_string(value):
     
     value_str = str(value).strip()
     
-    # Handle negative signs at the end
     if value_str.endswith('-'):
         value_str = '-' + value_str[:-1]
     
-    # Remove common non-numeric characters but keep decimal point, negative sign, and e for scientific notation
     value_str = re.sub(r'[^\d.\-eE+]', '', value_str)
     
-    # Handle concatenated numbers - try to split and take first valid number
     if value_str.count('.') > 1 or (value_str.count('-') > 1 and not value_str.startswith('-')):
-        # Multiple decimals or negatives suggest concatenated numbers
-        # Try to extract the first valid number
         match = re.search(r'^-?\d+\.?\d*', value_str)
         if match:
             value_str = match.group()
@@ -112,21 +107,15 @@ def clean_csv_data(df):
     df_cleaned = df.copy()
     
     for col in df_cleaned.columns:
-        # Try to identify numeric columns
         if df_cleaned[col].dtype == 'object':
-            # Sample a few values to check if they look numeric
             sample = df_cleaned[col].dropna().head(10)
             if len(sample) > 0:
-                # Check if values contain numbers
                 numeric_pattern = any(bool(re.search(r'\d', str(val))) for val in sample)
                 
                 if numeric_pattern:
-                    # Try cleaning
                     cleaned_col = df_cleaned[col].apply(clean_numeric_string)
-                    
-                    # If most values converted successfully, use cleaned version
                     valid_ratio = cleaned_col.notna().sum() / len(cleaned_col)
-                    if valid_ratio > 0.5:  # If more than 50% converted successfully
+                    if valid_ratio > 0.5:
                         df_cleaned[col] = cleaned_col
     
     return df_cleaned
@@ -134,35 +123,21 @@ def clean_csv_data(df):
 def load_csv_file(uploaded_file, clean_data=True, use_vector_db=True):
     """Load a CSV file and ingest it with vector DB persistence"""
     try:
-        # Read CSV first to clean it
         df = pd.read_csv(uploaded_file)
         original_shape = df.shape
         
-        # Clean data if enabled
         if clean_data:
             df = clean_csv_data(df)
         
-        # Generate hash for tracking
         file_hash = get_file_hash(df)
         
-        # Save cleaned CSV temporarily
         with tempfile.NamedTemporaryFile(delete=False, suffix='.csv', mode='w') as tmp_file:
             df.to_csv(tmp_file.name, index=False)
             tmp_path = tmp_file.name
         
-        # Check if this file hash already exists in vector DB
-        # The csv_ingestion should handle persistence internally
-        # If it uses ChromaDB, FAISS, or similar, they have built-in persistence
-        
-        # Ingest CSV (this creates/loads vectors from vector DB)
         file_id, metadata = csv_ingestion.ingest_csv(tmp_path, vectorize=True)
         
-        # Clean up temp file
         os.unlink(tmp_path)
-        
-        # Check if vectors were loaded from existing DB
-        # This is a heuristic - if ingestion was fast, likely from cache
-        is_cached = hasattr(metadata, 'from_cache') and metadata.from_cache
         
         return {
             'name': uploaded_file.name,
@@ -173,13 +148,41 @@ def load_csv_file(uploaded_file, clean_data=True, use_vector_db=True):
             'original_shape': original_shape,
             'cleaned_shape': df.shape,
             'cleaned': clean_data,
-            'vector_db': use_vector_db
+            'vector_db': use_vector_db,
+            'type': 'csv'
         }
     except Exception as e:
         return {
             'name': uploaded_file.name,
             'status': 'error',
-            'error': str(e)
+            'error': str(e),
+            'type': 'csv'
+        }
+
+def load_document_file(uploaded_file):
+    """Load a document file (TXT/DOCX) and ingest it"""
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix, mode='wb') as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_path = tmp_file.name
+        
+        file_id, metadata = document_ingestion.ingest_document(tmp_path, vectorize=True)
+        
+        os.unlink(tmp_path)
+        
+        return {
+            'name': uploaded_file.name,
+            'file_id': file_id,
+            'metadata': metadata,
+            'status': 'success',
+            'type': 'document'
+        }
+    except Exception as e:
+        return {
+            'name': uploaded_file.name,
+            'status': 'error',
+            'error': str(e),
+            'type': 'document'
         }
 
 def display_results(result):
@@ -187,7 +190,6 @@ def display_results(result):
     if 'error' in result:
         st.error(f"❌ Error: {result.get('details', result['error'])}")
         
-        # Show troubleshooting tips
         with st.expander("🔧 Troubleshooting Tips"):
             st.markdown("""
             **Common Issues:**
@@ -204,15 +206,75 @@ def display_results(result):
             """)
         return
     
+    metadata = result.get('metadata', {})
+    intent = metadata.get('intent', '')
+    
+    # Handle document queries
+    if intent == 'document_query':
+        st.subheader("📄 Document Answer")
+        narrative = result.get('narrative', 'No response generated.')
+        st.markdown(narrative)
+        
+        # Show retrieved chunks if available
+        if 'result_table' in result and result['result_table']:
+            with st.expander("📑 Retrieved Document Chunks"):
+                for idx, chunk_data in enumerate(result['result_table'][:3], 1):
+                    st.markdown(f"**Chunk {idx}** (Relevance: {chunk_data.get('similarity_score', 'N/A')})")
+                    
+                    if chunk_data.get('question'):
+                        st.info(f"**Q:** {chunk_data['question']}")
+                        st.success(f"**A:** {chunk_data['answer']}")
+                        if chunk_data.get('analysis'):
+                            st.warning(f"**Analysis:** {chunk_data['analysis']}")
+                    else:
+                        st.text(chunk_data.get('content', '')[:500])
+                    st.markdown("---")
+        
+        # Show stats
+        numbers = result.get('numbers', {})
+        if numbers:
+            with st.expander("📊 Query Statistics"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    if 'num_results' in numbers:
+                        st.metric("Results Found", numbers['num_results'])
+                with col2:
+                    if 'avg_similarity' in numbers:
+                        st.metric("Avg Relevance", f"{numbers['avg_similarity']:.3f}")
+        return
+    
+    # Handle general queries
+    if intent == 'general_query':
+        st.subheader("💬 Answer")
+        narrative = result.get('narrative', 'No response generated.')
+        st.markdown(narrative)
+        
+        numbers = result.get('numbers', {})
+        if numbers and any(k in numbers for k in ['csv_files', 'document_files', 'total_rows']):
+            with st.expander("📊 Data Summary"):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    if 'csv_files' in numbers:
+                        st.metric("CSV Files", numbers['csv_files'])
+                with col2:
+                    if 'document_files' in numbers:
+                        st.metric("Documents", numbers['document_files'])
+                with col3:
+                    if 'total_rows' in numbers:
+                        st.metric("Total Rows", numbers['total_rows'])
+        return
+    
+    # Handle analytical queries (existing code)
     numbers = result.get('numbers', {})
     
-    # Create columns for better layout
+    if 'narrative' in result and result['narrative']:
+        st.info(f"💡 {result['narrative']}")
+    
     col1, col2 = st.columns([2, 1])
     
     with col1:
         st.subheader("📊 Query Results")
         
-        # Show values found
         if 'top_values' in numbers:
             values = numbers['top_values']
             indices = numbers.get('top_indices', [])
@@ -226,13 +288,11 @@ def display_results(result):
             else:
                 st.metric("Result Value", values)
         
-        # Show result table if available
         if 'result_table' in result and result['result_table']:
             st.subheader("📋 Result Table")
             result_df = pd.DataFrame(result['result_table'])
             st.dataframe(result_df, use_container_width=True)
             
-            # ✅ Add unique key so multiple download buttons don’t clash
             csv = result_df.to_csv(index=False)
             unique_key = f"download_button_{uuid.uuid4()}"
             st.download_button(
@@ -246,7 +306,6 @@ def display_results(result):
     with col2:
         st.subheader("📈 Statistics")
         
-        # Display statistics as metrics
         stat_mapping = {
             'average': ('Average', '📊'),
             'min': ('Minimum', '⬇️'),
@@ -254,7 +313,7 @@ def display_results(result):
             'sum': ('Sum', '➕'),
             'count': ('Count', '🔢'),
             'filtered_rows': ('Filtered Rows', '🔍'),
-            'total_rows': ('Total Rows', '📝')
+            'total_rows': ('Total Rows', '📄')
         }
         
         for key, (label, emoji) in stat_mapping.items():
@@ -268,8 +327,8 @@ def display_results(result):
 
 # Main app
 def main():
-    st.title("🔍 Analytical AI Agent - Multi-CSV Query Interface")
-    st.markdown("Upload multiple CSV files and run analytical queries across your data")
+    st.title("📊 Analytical AI Agent ")
+    st.markdown("Upload CSV files and documents to run analytical queries across your data")
     
     # Sidebar for file upload and settings
     with st.sidebar:
@@ -285,7 +344,7 @@ def main():
                 st.write(f"**Collections:** {db_info.get('collections', 'N/A')}")
                 st.caption(f"Path: `{db_info.get('path', 'N/A')}`")
                 
-                st.info("💡 Embeddings are persisted in the vector DB. Re-uploading files will reuse existing vectors if available.")
+                st.info("💡 Embeddings are persisted in the vector DB.")
                 
                 if st.button("🗑️ Clear Vector Database"):
                     if clear_vector_db():
@@ -305,7 +364,7 @@ def main():
             st.session_state.cleaning_options['handle_concatenated'] = st.checkbox(
                 "Handle concatenated numbers",
                 value=True,
-                help="Fix numbers stuck together (e.g., '0.0690.059')"
+                help="Fix numbers stuck together"
             )
             st.session_state.cleaning_options['convert_negative'] = st.checkbox(
                 "Fix negative sign position",
@@ -315,42 +374,64 @@ def main():
             
             clean_enabled = any(st.session_state.cleaning_options.values())
         
-        uploaded_files = st.file_uploader(
-            "Upload CSV Files",
-            type=['csv'],
-            accept_multiple_files=True,
-            help="Upload one or more CSV files to analyze"
-        )
+        # File upload tabs
+        tab1, tab2 = st.tabs(["📊 CSV Files", "📄 Documents"])
         
-        if uploaded_files:
-            if st.button("🔄 Load All Files", type="primary"):
-                st.session_state.loaded_files = []
-                
-                with st.spinner("Loading files and creating/updating vector embeddings..."):
-                    progress_bar = st.progress(0)
-                    status_text = st.empty()
+        with tab1:
+            uploaded_csvs = st.file_uploader(
+                "Upload CSV Files",
+                type=['csv'],
+                accept_multiple_files=True,
+                help="Upload one or more CSV files"
+            )
+            
+            if uploaded_csvs:
+                if st.button("📤 Load CSV Files", type="primary"):
+                    st.session_state.loaded_files = []
                     
-                    for idx, file in enumerate(uploaded_files):
-                        # Reset file pointer
-                        file.seek(0)
+                    with st.spinner("Loading CSV files..."):
+                        progress_bar = st.progress(0)
                         
-                        # Show status
-                        status_text.text(f"Processing: {file.name}")
-                        
-                        result = load_csv_file(file, clean_data=clean_enabled)
-                        st.session_state.loaded_files.append(result)
-                        
-                        progress_bar.progress((idx + 1) / len(uploaded_files))
-                
-                success_count = sum(1 for f in st.session_state.loaded_files if f['status'] == 'success')
-                
-                if success_count > 0:
-                    st.success(f"✅ Loaded {success_count} file(s) with vector DB persistence")
-                st.rerun()
+                        for idx, file in enumerate(uploaded_csvs):
+                            file.seek(0)
+                            result = load_csv_file(file, clean_data=clean_enabled)
+                            st.session_state.loaded_files.append(result)
+                            progress_bar.progress((idx + 1) / len(uploaded_csvs))
+                    
+                    success_count = sum(1 for f in st.session_state.loaded_files if f['status'] == 'success')
+                    if success_count > 0:
+                        st.success(f"✅ Loaded {success_count} CSV file(s)")
+                    st.rerun()
         
-        # Display loaded files
+        with tab2:
+            uploaded_docs = st.file_uploader(
+                "Upload Documents",
+                type=['txt', 'docx'],
+                accept_multiple_files=True,
+                help="Upload TXT or DOCX files"
+            )
+            
+            if uploaded_docs:
+                if st.button("📤 Load Documents", type="primary"):
+                    st.session_state.loaded_documents = []
+                    
+                    with st.spinner("Loading documents..."):
+                        progress_bar = st.progress(0)
+                        
+                        for idx, file in enumerate(uploaded_docs):
+                            file.seek(0)
+                            result = load_document_file(file)
+                            st.session_state.loaded_documents.append(result)
+                            progress_bar.progress((idx + 1) / len(uploaded_docs))
+                    
+                    success_count = sum(1 for f in st.session_state.loaded_documents if f['status'] == 'success')
+                    if success_count > 0:
+                        st.success(f"✅ Loaded {success_count} document(s)")
+                    st.rerun()
+        
+        # Display loaded CSV files
         if st.session_state.loaded_files:
-            st.subheader("📂 Loaded Files")
+            st.subheader("📂 Loaded CSV Files")
             for file_info in st.session_state.loaded_files:
                 if file_info['status'] == 'success':
                     with st.expander(f"✅ {file_info['name']}"):
@@ -358,60 +439,77 @@ def main():
                         st.write(f"**Columns:** {file_info['metadata'].num_columns}")
                         st.write(f"**File ID:** `{file_info['file_id']}`")
                         
-                        if file_info.get('vector_db'):
-                            st.success("🗄️ Vectors stored in DB")
-                        
                         if file_info.get('cleaned'):
                             st.info(f"🧹 Data cleaned")
                         
                         if file_info['metadata'].columns:
                             st.write("**Column Names:**")
-                            for col in file_info['metadata'].columns[:10]:
+                            for col in file_info['metadata'].columns[:5]:
                                 st.text(f"  • {col}")
-                            if len(file_info['metadata'].columns) > 10:
-                                st.write(f"... and {len(file_info['metadata'].columns) - 10} more")
+                            if len(file_info['metadata'].columns) > 5:
+                                st.write(f"... and {len(file_info['metadata'].columns) - 5} more")
                 else:
                     with st.expander(f"❌ {file_info['name']}", expanded=True):
                         st.error(f"**Error:** {file_info['error']}")
-                        st.info("💡 Try enabling all data cleaning options above")
-            
+        
+        # Display loaded documents
+        if st.session_state.loaded_documents:
+            st.subheader("📄 Loaded Documents")
+            for doc_info in st.session_state.loaded_documents:
+                if doc_info['status'] == 'success':
+                    with st.expander(f"✅ {doc_info['name']}"):
+                        st.write(f"**Type:** {doc_info['metadata'].document_type.upper()}")
+                        st.write(f"**Characters:** {doc_info['metadata'].num_characters:,}")
+                        st.write(f"**Chunks:** {doc_info['metadata'].num_chunks}")
+                        st.write(f"**Q&A Pairs:** {doc_info['metadata'].num_qa_pairs}")
+                        st.write(f"**File ID:** `{doc_info['file_id']}`")
+                        
+                        if doc_info['metadata'].has_questions:
+                            st.success("📋 Contains Q&A pairs")
+                else:
+                    with st.expander(f"❌ {doc_info['name']}", expanded=True):
+                        st.error(f"**Error:** {doc_info['error']}")
+        
+        # Clear all button
+        if st.session_state.loaded_files or st.session_state.loaded_documents:
             if st.button("🗑️ Clear All Files"):
                 st.session_state.loaded_files = []
+                st.session_state.loaded_documents = []
                 st.rerun()
     
     # Main query interface
-    if not st.session_state.loaded_files:
-        st.info("👈 Please upload CSV files using the sidebar to get started")
+    if not st.session_state.loaded_files and not st.session_state.loaded_documents:
+        st.info("👈 Please upload CSV files or documents using the sidebar to get started")
         
         # Show example queries
-        st.subheader("💡 Example Queries")
-        st.markdown("""
-        Once you upload files, try queries like:
-        - `Find the lowest value of Column - Amplitude`
-        - `What is the average of Sales column?`
-        - `Show me the maximum temperature recorded`
-        - `Count rows where Status is 'Active'`
-        - `Sum all values in Revenue column`
-        """)
+        col1, col2 = st.columns(2)
         
-        # Show data cleaning info
-        st.subheader("🧹 Data Cleaning Features")
-        st.markdown("""
-        This app automatically cleans common data issues:
-        - ✅ Concatenated numbers: `0.0690.0592` → `0.069`
-        - ✅ Misplaced negatives: `0.0105-` → `-0.0105`
-        - ✅ Special characters: `$1,234.56` → `1234.56`
-        - ✅ Mixed text/numbers: `Value: 123` → `123`
-        """)
+        with col1:
+            st.subheader("💡 CSV Query Examples")
+            st.markdown("""
+            - `Find the lowest value of Amplitude`
+            - `What is the average of Sales column?`
+            - `Show me the maximum temperature`
+            - `Sort by price in descending order`
+            - `Count rows where Status is Active`
+            """)
+        
+        with col2:
+            st.subheader("📄 Document Query Examples")
+            st.markdown("""
+            - `How much is the rise in envelope value?`
+            - `Explain the analysis for kurtosis`
+            - `What does the document say about harmonic energy?`
+            - `Show Q1 from the document`
+            - `Compare current vs best performance`
+            """)
         
         st.subheader("🗄️ Vector Database Persistence")
         st.markdown("""
-        **Persistent vector storage benefits:**
-        - ✅ Embeddings saved directly in vector DB
-        - ✅ No repeated API calls for same data
-        - ✅ Fast retrieval from indexed vectors
-        - ✅ Survives application restarts
-        - ✅ Efficient similarity search
+        **Benefits:**
+        - ✅ Embeddings saved in vector DB
+        - ✅ Fast semantic search
+        - ✅ No repeated API calls
         - ✅ Production-ready architecture
         """)
     else:
@@ -421,8 +519,8 @@ def main():
         query = st.text_area(
             "Enter your query:",
             height=100,
-            placeholder="e.g., Find the lowest value of Column - Amplitude of FTF as per data sheet",
-            help="Ask questions about your data in natural language"
+            placeholder="e.g., How much is the rise in current envelope's absolute value? Or: Find the lowest amplitude value",
+            help="Ask questions about your CSV data or documents"
         )
         
         col1, col2, col3 = st.columns([1, 1, 4])
@@ -440,24 +538,20 @@ def main():
                 try:
                     result = analytical_agent.process_query(query)
                     
-                    # Add to history
                     st.session_state.query_history.insert(0, {
                         'query': query,
                         'result': result
                     })
                     
-                    # Keep only last 5 queries
                     st.session_state.query_history = st.session_state.query_history[:5]
                     
                 except Exception as e:
                     st.error(f"❌ Error processing query: {str(e)}")
-                    st.info("💡 Try enabling data cleaning options in the sidebar")
         
         # Display current results
         if st.session_state.query_history:
             st.markdown("---")
             
-            # Show most recent query result
             latest = st.session_state.query_history[0]
             st.subheader(f"Query: {latest['query']}")
             display_results(latest['result'])

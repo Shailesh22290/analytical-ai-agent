@@ -1,4 +1,17 @@
+
+    # Model names
+    #MBEDDING_MODEL: str = "models/gemini-embedding-001"
+   #GENERATIVE_MODEL: str = "gemini-2.0-flash-exp"
+    
+   #!/usr/bin/env python3
 """
+Direct fix for config/settings.py
+This will rewrite the entire file correctly
+"""
+from pathlib import Path
+
+# Correct settings.py content
+CORRECT_SETTINGS = '''"""
 Configuration settings for the Analytical AI Agent
 """
 import os
@@ -16,25 +29,18 @@ class Settings:
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     
     # Model names
-    EMBEDDING_MODEL: str = "models/gemini-embedding-001"
+    EMBEDDING_MODEL: str = "models/embedding-001"
     GENERATIVE_MODEL: str = "gemini-2.0-flash-exp"
-
     
     # Paths
     BASE_DIR: Path = Path(__file__).parent.parent
     DATA_DIR: Path = BASE_DIR / "data"
     INPUT_DIR: Path = DATA_DIR / "input"
     VECTOR_DIR: Path = DATA_DIR / "vectors"
-    DOCUMENTS_DIR: Path = DATA_DIR / "documents"  # NEW: For document storage
     
     # Vector DB settings
-    VECTOR_DIMENSION: int = 3072
-    FAISS_INDEX_TYPE: str = "Flat"
-    
-    # Document settings
-    SUPPORTED_DOCUMENT_TYPES: List[str] = ['.txt', '.docx']  # NEW
-    DEFAULT_CHUNK_SIZE: int = 1000  # NEW: Characters per chunk
-    DEFAULT_CHUNK_OVERLAP: int = 200  # NEW: Overlap between chunks
+    VECTOR_DIMENSION: int = 768  # Gemini embedding dimension
+    FAISS_INDEX_TYPE: str = "Flat"  # or "IVFFlat" for larger datasets
     
     # Supported intents
     SUPPORTED_INTENTS: List[str] = [
@@ -44,13 +50,12 @@ class Settings:
         "top_n",
         "compare_top",
         "explain_row",
-        "general_query",
-        "document_query"  # NEW: For document-based queries
+        "general_query"  # NEW: Fallback for conversational queries
     ]
     
     # LLM settings
     MAX_TOKENS: int = 2048
-    TEMPERATURE: float = 0.1
+    TEMPERATURE: float = 0.1  # Low temperature for deterministic parsing
     
     # Pandas display settings
     MAX_ROWS_DISPLAY: int = 100
@@ -67,7 +72,6 @@ class Settings:
         # Create directories if they don't exist
         cls.INPUT_DIR.mkdir(parents=True, exist_ok=True)
         cls.VECTOR_DIR.mkdir(parents=True, exist_ok=True)
-        cls.DOCUMENTS_DIR.mkdir(parents=True, exist_ok=True)  # NEW
         
         return True
     
@@ -82,5 +86,32 @@ class Settings:
         return cls.VECTOR_DIR / f"{file_id}_metadata.pkl"
 
 
-# Create settings instance
+# Create settings instance (MUST be after class definition)
 settings = Settings()
+'''
+
+def main():
+    filepath = Path("config/settings.py")
+    
+    print("🔧 Fixing config/settings.py...")
+    
+    # Backup original
+    if filepath.exists():
+        backup_path = Path("config/settings.py.backup")
+        with open(filepath, 'r') as f:
+            original = f.read()
+        with open(backup_path, 'w') as f:
+            f.write(original)
+        print(f"✓ Backed up original to {backup_path}")
+    
+    # Write correct version
+    with open(filepath, 'w') as f:
+        f.write(CORRECT_SETTINGS)
+    
+    print(f"✅ Fixed {filepath}")
+    print("\nNow try:")
+    print("  python -c 'from config.settings import settings; print(settings)'")
+    print("  streamlit run app.py")
+
+if __name__ == '__main__':
+    main()

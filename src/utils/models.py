@@ -73,6 +73,13 @@ class ExplainRowParams(BaseModel):
     top_k: int = Field(default=1, ge=1, le=10)
 
 
+class DocumentQueryParams(BaseModel):
+    """Parameters for document_query intent"""
+    query: str = Field(..., description="Question about document content")
+    file_id: Optional[str] = None
+    top_k: int = Field(default=3, ge=1, le=10)
+
+
 class AnalysisResult(BaseModel):
     """Result from pandas analysis"""
     result_table: List[Dict[str, Any]] = Field(default_factory=list, description="Raw data rows")
@@ -101,10 +108,33 @@ class FileMetadata(BaseModel):
     ingestion_timestamp: str
 
 
+class DocumentMetadata(BaseModel):
+    """Metadata for an ingested document (TXT/DOCX)"""
+    file_id: str
+    filename: str
+    document_type: str  # 'txt', 'docx', 'pdf'
+    num_characters: int
+    num_chunks: int
+    num_qa_pairs: int
+    ingestion_timestamp: str
+    has_questions: bool = False
+
+
 class VectorMetadata(BaseModel):
-    """Metadata for a vector in the database"""
+    """Metadata for a vector in the database (CSV rows/columns)"""
     file_id: str
     row_idx: int
     column_name: Optional[str] = None  # For column summaries
     is_row_vector: bool = True
     original_text: str
+
+
+class DocumentChunkMetadata(BaseModel):
+    """Metadata for a document chunk vector"""
+    file_id: str
+    chunk_idx: int
+    chunk_type: str  # 'text', 'qa_pair', 'table'
+    original_text: str
+    question_text: Optional[str] = None
+    answer_text: Optional[str] = None
+    analysis_text: Optional[str] = None

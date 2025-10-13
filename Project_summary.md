@@ -18,6 +18,7 @@ analytical-ai-agent/
 │   ├── agents/
 │   │   ├── __init__.py
 │   │   ├── ingestion.py         # CSV loading & vectorization
+│   │   ├── document_ingestion.py  #  Document processing
 │   │   ├── pandas_engine.py     # Deterministic analysis operations
 │   │   └── analytical_agent.py  # Main orchestrator
 │   ├── utils/
