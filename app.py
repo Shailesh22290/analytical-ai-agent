@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Analytical AI Agent - Streamlit 
+Analytical AI Agent - Streamlit Multi-CSV + Document Query Interface
 Run with: streamlit run app.py
 """
 import streamlit as st
@@ -209,17 +209,17 @@ def display_results(result):
     metadata = result.get('metadata', {})
     intent = metadata.get('intent', '')
     
-    # Handle document queries
+    # Handle analysis queries (document_query)
     if intent == 'document_query':
-        st.subheader("📄 Document Answer")
+        st.subheader("📊 Analysis Response")
         narrative = result.get('narrative', 'No response generated.')
         st.markdown(narrative)
         
         # Show retrieved chunks if available
         if 'result_table' in result and result['result_table']:
-            with st.expander("📑 Retrieved Document Chunks"):
+            with st.expander("📑 Retrieved Analysis Sections", expanded=False):
                 for idx, chunk_data in enumerate(result['result_table'][:3], 1):
-                    st.markdown(f"**Chunk {idx}** (Relevance: {chunk_data.get('similarity_score', 'N/A')})")
+                    st.markdown(f"**Section {idx}** (Relevance: {chunk_data.get('similarity_score', 'N/A')})")
                     
                     if chunk_data.get('question'):
                         st.info(f"**Q:** {chunk_data['question']}")
@@ -233,7 +233,7 @@ def display_results(result):
         # Show stats
         numbers = result.get('numbers', {})
         if numbers:
-            with st.expander("📊 Query Statistics"):
+            with st.expander("📊 Query Statistics", expanded=False):
                 col1, col2 = st.columns(2)
                 with col1:
                     if 'num_results' in numbers:
@@ -327,7 +327,7 @@ def display_results(result):
 
 # Main app
 def main():
-    st.title("📊 Analytical AI Agent ")
+    st.title("📊 Analytical AI Agent")
     st.markdown("Upload CSV files and documents to run analytical queries across your data")
     
     # Sidebar for file upload and settings

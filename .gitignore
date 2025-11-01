@@ -1,7 +1,8 @@
 # Environment
 .env
-venv/
+myenv/
 env/
+ai
 *.pyc
 __pycache__/
 
@@ -24,3 +25,5 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+bin/

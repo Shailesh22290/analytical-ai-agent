@@ -23,9 +23,9 @@ pip install -r requirements.txt
 
 3. Configure environment:
 ```bash
-cp .env.example .env
+cp .env
 # Edit .env and add your GEMINI_API_KEY
 ```
 
-## Usage
-See examples in `tests/` directory.
+
+AI_NaxA

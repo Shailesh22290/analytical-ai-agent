@@ -6,7 +6,9 @@ import google.generativeai as genai
 from typing import List, Dict, Any, Optional
 import numpy as np
 from config.settings import settings
+import logging
 
+logger = logging.getLogger(__name__) 
 
 class GeminiClient:
     """Client for Google Gemini API"""
@@ -15,7 +17,12 @@ class GeminiClient:
         """Initialize Gemini client"""
         if not settings.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY not configured")
-        
+        try:
+            key_preview = settings.GEMINI_API_KEY[-4:]
+            logger.info(f"Configuring Gemini client with API key ending in: ...{key_preview}")
+        except Exception:
+            logger.warning("Could not display API key preview.")
+            
         genai.configure(api_key=settings.GEMINI_API_KEY)
         self.embedding_model = settings.EMBEDDING_MODEL
         self.generative_model = genai.GenerativeModel(settings.GENERATIVE_MODEL)
@@ -88,7 +95,7 @@ class GeminiClient:
         Args:
             user_query: Natural language query
             csv_metadata: Metadata about available CSV files
-            doc_metadata: Metadata about available documents
+            doc_metadata: Metadata about available analysis documents
             
         Returns:
             Parsed intent as dictionary
@@ -101,21 +108,21 @@ class GeminiClient:
         ]) if csv_metadata else "No CSV files loaded"
         
         doc_context = "\n".join([
-            f"- Document ID: {d['file_id']}, Type: {d['document_type']}, "
+            f"- Analysis ID: {d['file_id']}, Type: {d['document_type']}, "
             f"Filename: {d['filename']}, Q&A pairs: {d.get('num_qa_pairs', 0)}"
             for d in (doc_metadata or [])
-        ]) if doc_metadata else "No documents loaded"
+        ]) if doc_metadata else "No analysis documents loaded"
         
         prompt = f"""You are an intent parser for an analytical agent. Parse the user query into a JSON action.
 
 Available CSV files:
 {csv_context}
 
-Available Documents:
+Available Analysis Documents:
 {doc_context}
 
 CRITICAL INSTRUCTIONS:
-- If query asks about DOCUMENT CONTENT (questions from document, explain bearing diagnostics, analysis), use document_query (8)
+- If query asks about ANALYSIS CONTENT (questions from analysis, explain bearing diagnostics, analysis insights), use document_query (8)
 - If query asks for CSV DATA COMPUTATION (top, highest, lowest, filter, sort, average), use analytical intents (1-6)
 - If query asks for DESCRIPTION of data structure, use general_query (7)
 
@@ -151,26 +158,26 @@ DESCRIPTIVE INTENT (for information):
    Use when: "describe", "what columns", "explain structure", "tell me about files", "list files"
    Parameters: {{"question": str, "file_id": str|null}}
 
-DOCUMENT INTENT (for document content):
-8. document_query - Answer questions from document content
-   Use when: "what does the document say", "explain from doc", "bearing diagnostics analysis", "Q1 from document", "rise in envelope", "analysis of kurtosis"
+ANALYSIS INTENT (for analysis content):
+8. document_query - Answer questions from analysis content
+   Use when: "what does the analysis say", "explain from analysis", "bearing diagnostics analysis", "Q1 from analysis", "rise in envelope", "analysis of kurtosis"
    Parameters: {{"query": str, "file_id": str|null, "top_k": int}}
 
 User query: "{user_query}"
 
 DECISION RULES:
 - "highest/lowest VALUE in CSV" → top_n (analytical)
-- "what does document say about X" → document_query (document)
+- "what does analysis say about X" → document_query (analysis)
 - "describe CSV structure" → general_query (descriptive)
-- "rise in envelope/acceleration/velocity" → document_query (document)
-- "harmonic energy", "kurtosis", "crest factor" → document_query (document)
+- "rise in envelope/acceleration/velocity" → document_query (analysis)
+- "harmonic energy", "kurtosis", "crest factor" → document_query (analysis)
 
 Parse this into JSON with keys "intent" and "parameters". 
 Return ONLY valid JSON, no explanation.
 
 Examples:
 - "Show the highest value" → {{"intent": "top_n", "parameters": {{"column": "auto-detect", "n": 1, "ascending": false}}}}
-- "What does the document say about envelope rise?" → {{"intent": "document_query", "parameters": {{"query": "envelope rise", "top_k": 3}}}}
+- "What does the analysis say about envelope rise?" → {{"intent": "document_query", "parameters": {{"query": "envelope rise", "top_k": 3}}}}
 - "Describe the CSV" → {{"intent": "general_query", "parameters": {{"question": "Describe the CSV"}}}}
 """
 
@@ -217,7 +224,7 @@ Examples:
         Args:
             question: User's question
             csv_metadata: Metadata about loaded CSV files
-            doc_metadata: Metadata about loaded documents
+            doc_metadata: Metadata about loaded analysis documents
             sample_data: Optional sample data from files
             
         Returns:
@@ -238,7 +245,7 @@ CSV File: {meta.get('filename', meta['file_id'])}
         doc_info = []
         for meta in (doc_metadata or []):
             info = f"""
-Document: {meta.get('filename', meta['file_id'])}
+Analysis Document: {meta.get('filename', meta['file_id'])}
 - Type: {meta.get('document_type', 'unknown')}
 - Characters: {meta.get('num_characters', 0)}
 - Q&A pairs: {meta.get('num_qa_pairs', 0)}
@@ -246,7 +253,7 @@ Document: {meta.get('filename', meta['file_id'])}
             doc_info.append(info)
         
         csv_context = "\n".join(csv_info) if csv_info else "No CSV files loaded"
-        doc_context = "\n".join(doc_info) if doc_info else "No documents loaded"
+        doc_context = "\n".join(doc_info) if doc_info else "No analysis documents loaded"
         
         # Add sample data if provided
         sample_context = ""
@@ -258,7 +265,7 @@ Document: {meta.get('filename', meta['file_id'])}
 Available CSV Files:
 {csv_context}
 
-Available Documents:
+Available Analysis Documents:
 {doc_context}{sample_context}
 
 User Question: "{question}"
@@ -268,7 +275,7 @@ Provide a clear, informative answer. If the question asks about:
 - Data content: Explain what kind of data is present
 - Available analyses: Suggest what queries they can run
 - Column details: Explain specific columns if asked
-- Documents: Mention available documents and their content
+- Analysis documents: Mention available analysis documents and their content
 
 Be conversational and helpful. Format your response with clear sections if needed."""
 
@@ -289,11 +296,11 @@ Be conversational and helpful. Format your response with clear sections if neede
         search_results: List[tuple]
     ) -> str:
         """
-        Answer query using retrieved document context
+        Answer query using retrieved analysis context
         
         Args:
             query: User's question
-            context_text: Retrieved context from documents
+            context_text: Retrieved context from analysis
             search_results: List of (chunk, similarity, metadata) tuples
             
         Returns:
@@ -311,13 +318,13 @@ Be conversational and helpful. Format your response with clear sections if neede
         
         qa_context = ""
         if qa_pairs:
-            qa_context = "\n\nRelevant Q&A pairs from document:\n" + "\n\n".join([
+            qa_context = "\n\nRelevant Q&A pairs from analysis:\n" + "\n\n".join([
                 f"Q: {qa['question']}\nA: {qa['answer']}" + 
                 (f"\nAnalysis: {qa['analysis']}" if qa['analysis'] else "")
                 for qa in qa_pairs[:3]
             ])
         
-        prompt = f"""You are an expert bearing diagnostics analyst. Answer the user's question using the provided document context.
+        prompt = f"""You are an expert bearing diagnostics analyst. Answer the user's question using the provided analysis context.
 
 User Question: "{query}"
 
@@ -327,12 +334,12 @@ Retrieved Context:
 Instructions:
 - Answer directly and specifically based on the context provided
 - If the query asks about comparisons (current vs best), calculate percentage changes
-- If the query asks about analysis, provide the analysis from the document
+- If the query asks about analysis, provide the analysis from the provided material
 - Use technical terms appropriately (envelope, acceleration, velocity, kurtosis, crest factor, harmonic energy, BPFI, BPFO, BSF, FTF)
 - Structure your answer clearly with observations and analysis sections if relevant
 - If context doesn't contain exact answer, say so and provide what's available
 
-Provide a comprehensive, professional answer."""
+Provide a comprehensive, professional answer according to the analysis."""
 
         response = self.generative_model.generate_content(
             prompt,
