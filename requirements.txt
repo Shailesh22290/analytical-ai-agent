@@ -4,7 +4,6 @@ numpy==1.26.4
 faiss-cpu==1.7.4
 pyarrow==14.0.2
 pydantic==2.6.3
-pydantic_core==2.16.1
 python-dotenv==1.0.0
 requests==2.31.0
 beautifulsoup4==4.12.3
