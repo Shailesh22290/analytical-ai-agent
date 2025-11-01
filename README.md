@@ -1,16 +1,13 @@
-Below is a **clean, user-friendly, professional README** version of your project summary — short, clear, and beginner-friendly, but still impressive 👇
 
----
+# Analytical AI Agent
 
-# 📊 Analytical AI Agent
-
-An AI-powered data analysis system that understands natural language questions and performs **100% accurate, hallucination-free analysis** using pandas — while generating human-friendly insights with an LLM.
+An AI-powered data analysis system that understands natural language questions and performs **accurate, hallucination-free analysis** using pandas — while generating human-friendly insights with an LLM.
 
 > The LLM **never touches numbers** — all calculations are done by pandas to ensure correctness.
 
 ---
 
-## ✅ Key Features
+##  Features
 
 | Feature                       | Description                                         |
 | ----------------------------- | --------------------------------------------------- |
@@ -50,8 +47,7 @@ analytical-ai-agent/
 │   └── vectordb/ (FAISS store)
 ├── data/ (CSV + vector indexes)
 ├── examples/
-├── tests/
-├── main.py (CLI)
+├── app.py 
 └── README.md
 ```
 
@@ -90,35 +86,20 @@ analytical-ai-agent/
 
 ---
 
-## ▶️ Quick Start
+##  Quick Start
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/Shailesh22290/analytical-ai-agent
 cd analytical-ai-agent
 pip install -r requirements.txt
-bash setup.sh
 ```
 
 ### Run demo
 
 ```bash
-python examples/example_usage.py
+streamlit run app.py
 ```
 
-### CLI usage
-
-```bash
-python main.py ingest data.csv
-python main.py query "top 5 products by revenue"
-```
-
----
-
-## 🧪 Testing
-
-```bash
-pytest
-```
 
 ---
 
