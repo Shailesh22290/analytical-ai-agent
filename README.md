@@ -11,13 +11,13 @@ An AI-powered data analysis system that understands natural language questions a
 
 | Feature                       | Description                                         |
 | ----------------------------- | --------------------------------------------------- |
-| 🧠 Natural-language analysis  | Ask questions like *"Show top 5 products by sales"* |
-| 📉 Zero numeric hallucination | All numbers computed by pandas, not LLM             |
-| 📁 Smart CSV ingestion        | Detect columns, extract metadata, store securely    |
-| 🔍 FAISS vector search        | Semantic row lookup & context retrieval             |
-| 🧾 Structured output          | Raw results + exact numbers + narrative summary     |
-| 🛠 Modular architecture       | LLM layer + pandas engine + vector DB               |
-| 🧪 Fully tested               | Unit & integration tests included                   |
+| Natural-language analysis  | Ask questions like *"Show top 5 products by sales"* |
+| Zero numeric hallucination | All numbers computed by pandas, not LLM             |
+| Smart CSV ingestion        | Detect columns, extract metadata, store securely    |
+| FAISS vector search        | Semantic row lookup & context retrieval             |
+| Structured output          | Raw results + exact numbers + narrative summary     |
+| Modular architecture       | LLM layer + pandas engine + vector DB               |
+| Fully tested               | Unit & integration tests included                   |
 
 ---
 
@@ -30,30 +30,15 @@ User Question → LLM Interprets Intent → Pandas Executes Query
 
 ### Why this design?
 
-✅ LLM handles language & explanations
-✅ pandas handles all math, filters, sorting
-✅ FAISS handles semantic search
+LLM handles language & explanations
+pandas handles all math, filters, sorting
+FAISS handles semantic search
 ❌ LLM never fabricates numbers
 
 ---
 
-## 📂 Folder Structure
 
-```
-analytical-ai-agent/
-├── src/
-│   ├── agents/ (core logic)
-│   ├── utils/ (LLM wrapper, schemas)
-│   └── vectordb/ (FAISS store)
-├── data/ (CSV + vector indexes)
-├── examples/
-├── app.py 
-└── README.md
-```
-
----
-
-## 🚀 How It Works
+##  How It Works
 
 ### Example Query
 
@@ -67,15 +52,15 @@ analytical-ai-agent/
 
 ```json
 {
-  "result_table": [...],   // Raw dataframe rows
-  "numbers": {...},        // Exact computed values
-  "narrative": "..."       // Detailed explanation
+  "result_table": [...],  
+  "numbers": {...},        
+  "narrative": "..."     
 }
 ```
 
 ---
 
-## 🧠 Supported Operations
+##  Supported Operations
 
 | Task                | Example                     |
 | ------------------- | --------------------------- |
@@ -105,7 +90,7 @@ streamlit run app.py
 
 ---
 
-## 💡 Future Enhancements
+## Future Enhancements
 
 * Excel support
 * Charts & dashboards
@@ -115,18 +100,18 @@ streamlit run app.py
 
 ---
 
-## 🎯 Ideal Use Cases
+## Ideal Use Cases
 
 | Use Case                    | Example                                |
 | --------------------------- | -------------------------------------- |
 | Business analytics          | Sales, finance, operations             |
 | Student / research analysis | CSV-based research papers              |
 | Internal BI tools           | Private analysis without exposing data |
-| No-code data querying       | Analysts who hate SQL 😄               |
+| No-code data querying       | Analysts who hate SQL                |
 
 ---
 
-## 👏 Credits
+## Credits
 
 Built with:
 
