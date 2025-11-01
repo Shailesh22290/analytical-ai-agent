@@ -94,12 +94,14 @@ cd analytical-ai-agent
 pip install -r requirements.txt
 ```
 
+### Add your Gemini API key
+Create a .env file and add your gemini API before running demo
+
 ### Run demo
 
 ```bash
 streamlit run app.py
 ```
-
 
 ---
 
