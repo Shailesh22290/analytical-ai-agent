@@ -1,31 +1,154 @@
-# Analytical AI Agent
+Below is a **clean, user-friendly, professional README** version of your project summary — short, clear, and beginner-friendly, but still impressive 👇
 
-An AI-powered analytical agent that processes CSV files using vector search and deterministic pandas operations.
+---
 
-## Features
-- Vector-based semantic search using Gemini embeddings
-- Deterministic pandas operations for numeric analysis
-- LLM-driven natural language understanding
-- Strict separation: LLM for understanding, pandas for computation
+# 📊 Analytical AI Agent
 
-## Setup
+An AI-powered data analysis system that understands natural language questions and performs **100% accurate, hallucination-free analysis** using pandas — while generating human-friendly insights with an LLM.
 
-1. Create virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+> The LLM **never touches numbers** — all calculations are done by pandas to ensure correctness.
+
+---
+
+## ✅ Key Features
+
+| Feature                       | Description                                         |
+| ----------------------------- | --------------------------------------------------- |
+| 🧠 Natural-language analysis  | Ask questions like *"Show top 5 products by sales"* |
+| 📉 Zero numeric hallucination | All numbers computed by pandas, not LLM             |
+| 📁 Smart CSV ingestion        | Detect columns, extract metadata, store securely    |
+| 🔍 FAISS vector search        | Semantic row lookup & context retrieval             |
+| 🧾 Structured output          | Raw results + exact numbers + narrative summary     |
+| 🛠 Modular architecture       | LLM layer + pandas engine + vector DB               |
+| 🧪 Fully tested               | Unit & integration tests included                   |
+
+---
+
+## 🏗 Architecture Overview
+
+```
+User Question → LLM Interprets Intent → Pandas Executes Query
+            → LLM Writes Explanation → Final Structured Output
 ```
 
-2. Install dependencies:
+### Why this design?
+
+✅ LLM handles language & explanations
+✅ pandas handles all math, filters, sorting
+✅ FAISS handles semantic search
+❌ LLM never fabricates numbers
+
+---
+
+## 📂 Folder Structure
+
+```
+analytical-ai-agent/
+├── src/
+│   ├── agents/ (core logic)
+│   ├── utils/ (LLM wrapper, schemas)
+│   └── vectordb/ (FAISS store)
+├── data/ (CSV + vector indexes)
+├── examples/
+├── tests/
+├── main.py (CLI)
+└── README.md
+```
+
+---
+
+## 🚀 How It Works
+
+### Example Query
+
+> **"Show the top 5 products by revenue"**
+
+**Step 1:** LLM → Parse intent
+**Step 2:** pandas → Compute exact result
+**Step 3:** LLM → Explain in plain English
+
+**Output Format:**
+
+```json
+{
+  "result_table": [...],   // Raw dataframe rows
+  "numbers": {...},        // Exact computed values
+  "narrative": "..."       // Detailed explanation
+}
+```
+
+---
+
+## 🧠 Supported Operations
+
+| Task                | Example                     |
+| ------------------- | --------------------------- |
+| Top N results       | "Show top 10 by profit"     |
+| Column filters      | "Sales above 1000"          |
+| Compare averages    | "Compare Q1 vs Q2 revenue"  |
+| Semantic row search | "find laptop-related items" |
+
+---
+
+## ▶️ Quick Start
+
 ```bash
+git clone <repo-url>
+cd analytical-ai-agent
 pip install -r requirements.txt
+bash setup.sh
 ```
 
-3. Configure environment:
+### Run demo
+
 ```bash
-cp .env
-# Edit .env and add your GEMINI_API_KEY
+python examples/example_usage.py
 ```
 
+### CLI usage
 
-AI_NaxA
+```bash
+python main.py ingest data.csv
+python main.py query "top 5 products by revenue"
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+pytest
+```
+
+---
+
+## 💡 Future Enhancements
+
+* Excel support
+* Charts & dashboards
+* Time-series analytics
+* FastAPI interface for production use
+* Async embeddings for large CSVs
+
+---
+
+## 🎯 Ideal Use Cases
+
+| Use Case                    | Example                                |
+| --------------------------- | -------------------------------------- |
+| Business analytics          | Sales, finance, operations             |
+| Student / research analysis | CSV-based research papers              |
+| Internal BI tools           | Private analysis without exposing data |
+| No-code data querying       | Analysts who hate SQL 😄               |
+
+---
+
+## 👏 Credits
+
+Built with:
+
+* **pandas** for analysis
+* **FAISS** for semantic search
+* **Gemini API** for language understanding
+
+---
