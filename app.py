@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Analytical AI Agent - Streamlit Multi-CSV + Document Query Interface
-Run with: streamlit run app.py
-"""
 import streamlit as st
 import pandas as pd
 import sys
@@ -19,10 +14,940 @@ from src.agents.analytical_agent import analytical_agent
 
 # Page config
 st.set_page_config(
-    page_title="Analytical AI Agent",
-    page_icon="📊",
-    layout="wide"
+    page_title="Trust First AI Analyst",
+    page_icon="",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
+
+# Modern AI Chat Interface CSS
+st.markdown("""
+<style>
+/* =============================================================================
+   📁 FILE: assets/styles/main.css or styles/chat_interface.css
+   🎨 MODERN AI CHAT INTERFACE - ENHANCED DESIGN SYSTEM
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* =============================================================================
+   🎯 CSS CUSTOM PROPERTIES (DESIGN TOKENS)
+   ============================================================================= */
+
+:root {
+    /* Color Palette - Dark Theme */
+    --color-bg-main: #0f1116;
+    --color-bg-secondary: #1a1c23;
+    --color-bg-tertiary: #252830;
+    --color-bg-hover: #2d3038;
+    --color-bg-elevated: #32353e;
+    
+    /* Border & Dividers */
+    --color-border: #2f323b;
+    --color-border-light: #383b45;
+    --color-border-accent: rgba(99, 102, 241, 0.3);
+    
+    /* Accent Colors */
+    --color-accent: #6366f1;
+    --color-accent-hover: #4f46e5;
+    --color-accent-light: rgba(99, 102, 241, 0.15);
+    
+    /* Text Colors */
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #9ca3af;
+    --color-text-muted: #6b7280;
+    --color-text-disabled: #4b5563;
+    
+    /* Semantic Colors - Success */
+    --color-success-bg: #064e3b;
+    --color-success-border: #22c55e;
+    --color-success-text: #bbf7d0;
+    
+    /* Semantic Colors - Info */
+    --color-info-bg: #1e3a8a;
+    --color-info-border: #3b82f6;
+    --color-info-text: #bfdbfe;
+    
+    /* Semantic Colors - Error */
+    --color-error-bg: #450a0a;
+    --color-error-border: #ef4444;
+    --color-error-text: #fecaca;
+    
+    /* Semantic Colors - Warning */
+    --color-warning-bg: #451a03;
+    --color-warning-border: #f59e0b;
+    --color-warning-text: #fde68a;
+    
+    /* Spacing Scale */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+    
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-full: 9999px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-accent: 0 4px 12px rgba(99, 102, 241, 0.3);
+    
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+    --transition-base: 0.25s ease-in-out;
+    --transition-slow: 0.35s ease-in-out;
+    
+    /* Typography */
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --line-height-tight: 1.4;
+    --line-height-normal: 1.6;
+    --line-height-relaxed: 1.8;
+}
+
+/* =============================================================================
+   🌐 GLOBAL RESET & BASE STYLES
+   ============================================================================= */
+
+* {
+    font-family: var(--font-family);
+    color: var(--color-text-primary);
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--color-bg-main);
+    overflow-x: hidden;
+}
+
+/* =============================================================================
+   📐 LAYOUT & CONTAINER
+   ============================================================================= */
+
+.main {
+    background: var(--color-bg-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.block-container {
+    padding: var(--spacing-xl) var(--spacing-md);
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Responsive Container */
+@media (max-width: 768px) {
+    .block-container {
+        padding: var(--spacing-md) var(--spacing-sm);
+        max-width: 100%;
+    }
+}
+
+/* =============================================================================
+   🧭 SIDEBAR NAVIGATION
+   ============================================================================= */
+
+[data-testid="stSidebar"] {
+    background: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.sidebar-header h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.sidebar-header p {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin: var(--spacing-xs) 0 0 0;
+}
+
+/* History Items */
+.history-item {
+    padding: 0.75rem var(--spacing-lg);
+    margin: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    border-left: 2px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    word-break: break-word;
+}
+
+.history-item:hover {
+    background: var(--color-bg-hover);
+    border-left-color: var(--color-accent);
+    color: var(--color-text-primary);
+    transform: translateX(2px);
+}
+
+.history-item-active {
+    background: var(--color-accent-light);
+    border-left-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* =============================================================================
+   🏷️ HEADERS & TITLES
+   ============================================================================= */
+
+.main-header {
+    text-align: center;
+    padding: var(--spacing-2xl) var(--spacing-xl) var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-md) 0;
+    letter-spacing: -0.02em;
+    line-height: var(--line-height-tight);
+}
+
+.main-header p {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    margin: 0;
+    max-width: 600px;
+    line-height: var(--line-height-normal);
+}
+
+/* Section Headers */
+.section-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: var(--spacing-xl) 0 var(--spacing-md);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* =============================================================================
+   📁 FILE UPLOAD AREA
+   ============================================================================= */
+
+.upload-container {
+    background: var(--color-bg-tertiary);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.upload-container:hover {
+    border-color: var(--color-accent);
+    background: var(--color-bg-hover);
+    box-shadow: var(--shadow-accent);
+    transform: translateY(-2px);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-accent);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-sm);
+}
+
+.upload-subtitle {
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-lg);
+    line-height: var(--line-height-normal);
+}
+
+/* File Badge */
+.file-badge {
+    background: var(--color-accent-light);
+    color: var(--color-accent);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: var(--spacing-xs);
+}
+
+/* =============================================================================
+   💬 CHAT INPUT AREA — FIXED LAYOUT + RESPONSIVE BUTTONS
+   ============================================================================= */
+
+.chat-input-container {
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--spacing-xl);
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: var(--spacing-md);
+}
+
+.chat-input-container:focus-within {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-accent);
+}
+
+/* Text Area Styling */
+.stTextArea textarea {
+    background: var(--color-bg-hover) !important;
+    border: 1px solid var(--color-border) !important;
+    color: var(--color-text-primary) !important;
+    font-size: 1rem !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    border-radius: var(--radius-md) !important;
+    min-height: 90px !important;
+    max-height: 250px !important;
+    resize: vertical !important;
+    line-height: var(--line-height-normal) !important;
+}
+
+.stTextArea textarea::placeholder {
+    color: var(--color-text-muted) !important;
+}
+
+/* Chat Button Row */
+.chat-button-row {
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    gap: var(--spacing-md) !important;
+    flex-wrap: wrap !important;
+}
+
+/* =============================================================================
+   🔘 BUTTONS — POLISHED INTERACTION & SPACING
+   ============================================================================= */
+
+/* Base Button Container */
+.stButton,
+.secondary-button,
+.tertiary-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+/* Primary Button (Send) */
+.stButton > button {
+    background: var(--color-accent) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.75rem 1.75rem !important;
+    min-width: 130px !important;
+    height: 44px !important;
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    transition: all var(--transition-base) !important;
+    box-shadow: var(--shadow-accent) !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+}
+
+.stButton > button:hover {
+    background: var(--color-accent-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(99, 102, 241, 0.45) !important;
+}
+
+.stButton > button:active {
+    transform: translateY(0) !important;
+}
+
+/* Secondary Button (Clear) */
+.secondary-button > button {
+    background: var(--color-bg-secondary) !important;
+    color: var(--color-text-secondary) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.7rem 1.5rem !important;
+    min-width: 130px !important;
+    height: 44px !important;
+    font-weight: 500 !important;
+    font-size: 0.9rem !important;
+    transition: all var(--transition-base) !important;
+    cursor: pointer !important;
+}
+
+.secondary-button > button:hover {
+    background: var(--color-bg-hover) !important;
+    border-color: var(--color-accent) !important;
+    color: var(--color-accent) !important;
+    transform: translateY(-1px) !important;
+}
+
+.secondary-button > button:active {
+    transform: translateY(0) !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chat-button-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .stButton > button,
+    .secondary-button > button {
+        width: 100% !important;
+        min-width: unset !important;
+    }
+}
+
+/* =============================================================================
+   🗨️ MESSAGE COMPONENTS
+   ============================================================================= */
+
+.message-container {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg) var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.message-container:hover {
+    border-color: var(--color-border-light);
+    box-shadow: var(--shadow-md);
+}
+
+/* User Message */
+.user-message {
+    background: var(--color-bg-hover);
+    border-left: 3px solid var(--color-accent);
+}
+
+/* AI Message */
+.ai-message {
+    background: var(--color-bg-tertiary);
+    border-left: 3px solid var(--color-text-muted);
+}
+
+/* Message Header */
+.message-header {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Message Content */
+.message-content {
+    color: var(--color-text-primary);
+    line-height: var(--line-height-normal);
+    font-size: 0.96rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-align: left;
+}
+
+.message-content p {
+    margin: 0 0 var(--spacing-md) 0;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Message Timestamp */
+.message-timestamp {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-sm);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* =============================================================================
+   📊 RESULTS & METRICS
+   ============================================================================= */
+
+.result-section {
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    border: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.result-title {
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--spacing-md);
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Metrics Container */
+div[data-testid="metric-container"] {
+    background: var(--color-bg-tertiary) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+    border: 1px solid var(--color-border) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: flex-start !important;
+}
+
+div[data-testid="metric-container"] label {
+    color: var(--color-text-muted) !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+div[data-testid="metric-container"] [data-testid="stMetricValue"] {
+    color: var(--color-text-primary) !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+}
+
+/* =============================================================================
+   📦 CARDS & GRIDS
+   ============================================================================= */
+
+/* =============================================================================
+   🏠 WELCOME GRID & CARDS - Spacious and Responsive
+   ============================================================================= */
+
+.welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--spacing-xl);
+    margin: var(--spacing-2xl) 0;
+    padding: 0 var(--spacing-lg);
+    justify-items: stretch;
+}
+
+.welcome-card {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    text-align: left;
+    margin-bottom: 10px        
+}
+
+.welcome-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-accent);
+    transform: translateY(-6px);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-accent);
+}
+
+.card-title {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.card-description {
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+    line-height: var(--line-height-normal);
+    margin-top: var(--spacing-sm);
+}
+
+/* Extra breathing room on smaller screens */
+@media (max-width: 768px) {
+    .welcome-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+        padding: 0 var(--spacing-md);
+    }
+
+    .welcome-card {
+        padding: var(--spacing-xl);
+    }
+}
+
+/* =============================================================================
+   🔍 EXAMPLE QUERIES
+   ============================================================================= */
+
+.example-query {
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.example-query:hover {
+    background: var(--color-accent-light);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateX(4px);
+}
+
+/* =============================================================================
+   📊 DATA DISPLAY COMPONENTS
+   ============================================================================= */
+
+/* DataFrames */
+.stDataFrame {
+    background: var(--color-bg-tertiary) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    overflow: hidden;
+}
+
+/* Expanders */
+.streamlit-expanderHeader {
+    background: var(--color-bg-tertiary) !important;
+    color: var(--color-text-secondary) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+}
+
+.streamlit-expanderHeader:hover {
+    border-color: var(--color-accent) !important;
+    color: var(--color-accent) !important;
+}
+
+/* =============================================================================
+   🎨 SEMANTIC ALERTS
+   ============================================================================= */
+
+.stSuccess {
+    background: var(--color-success-bg) !important;
+    border-left: 3px solid var(--color-success-border) !important;
+    color: var(--color-success-text) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+}
+
+.stInfo {
+    background: var(--color-info-bg) !important;
+    border-left: 3px solid var(--color-info-border) !important;
+    color: var(--color-info-text) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+}
+
+.stError {
+    background: var(--color-error-bg) !important;
+    border-left: 3px solid var(--color-error-border) !important;
+    color: var(--color-error-text) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+}
+
+.stWarning {
+    background: var(--color-warning-bg) !important;
+    border-left: 3px solid var(--color-warning-border) !important;
+    color: var(--color-warning-text) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-md) !important;
+}
+
+/* =============================================================================
+   ⚙️ INTERACTIVE COMPONENTS
+   ============================================================================= */
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: var(--spacing-sm);
+}
+
+.stTabs [data-baseweb="tab"] {
+    background: var(--color-bg-tertiary) !important;
+    border: 1px solid var(--color-border) !important;
+    color: var(--color-text-muted) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--spacing-sm) var(--spacing-md) !important;
+    transition: all var(--transition-base) !important;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: var(--color-bg-hover) !important;
+    border-color: var(--color-accent) !important;
+}
+
+.stTabs [aria-selected="true"] {
+    background: var(--color-accent-light) !important;
+    border-color: var(--color-accent) !important;
+    color: var(--color-accent) !important;
+}
+
+/* Progress Bar */
+.stProgress > div > div {
+    background: var(--color-accent) !important;
+    border-radius: var(--radius-full) !important;
+}
+
+.stProgress > div {
+    background: var(--color-bg-tertiary) !important;
+    border-radius: var(--radius-full) !important;
+}
+
+/* Checkbox */
+.stCheckbox {
+    padding: var(--spacing-sm) 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.stCheckbox label {
+    color: var(--color-text-secondary) !important;
+    cursor: pointer;
+}
+
+/* Spinner */
+.stSpinner > div {
+    border-top-color: var(--color-accent) !important;
+}
+
+/* =============================================================================
+   🧩 UTILITY CLASSES
+   ============================================================================= */
+
+/* Divider */
+hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: var(--spacing-xl) 0;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center !important;
+}
+
+.text-left {
+    text-align: left !important;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+/* Flex Utilities */
+.flex-center {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.flex-between {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.flex-start {
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+}
+
+/* Spacing Utilities */
+.mt-sm { margin-top: var(--spacing-sm) !important; }
+.mt-md { margin-top: var(--spacing-md) !important; }
+.mt-lg { margin-top: var(--spacing-lg) !important; }
+.mb-sm { margin-bottom: var(--spacing-sm) !important; }
+.mb-md { margin-bottom: var(--spacing-md) !important; }
+.mb-lg { margin-bottom: var(--spacing-lg) !important; }
+
+/* =============================================================================
+   📱 RESPONSIVE DESIGN
+   ============================================================================= */
+
+@media (max-width: 768px) {
+    .main-header h1 {
+        font-size: 1.75rem;
+    }
+    
+    .welcome-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .button-group {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    
+    .stButton > button,
+    .secondary-button > button {
+        width: 100% !important;
+    }
+    
+    .upload-container {
+        padding: var(--spacing-lg);
+    }
+}
+
+/* =============================================================================
+   🎭 ANIMATIONS
+   ============================================================================= */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* =============================================================================
+   🌐 ACCESSIBILITY IMPROVEMENTS
+   ============================================================================= */
+
+*:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+/* High Contrast Focus for Buttons */
+button:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--color-accent) !important;
+    outline-offset: 2px !important;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+</style>
+
+""", unsafe_allow_html=True)
 
 # Initialize session state
 if 'loaded_files' not in st.session_state:
@@ -31,6 +956,8 @@ if 'loaded_documents' not in st.session_state:
     st.session_state.loaded_documents = []
 if 'query_history' not in st.session_state:
     st.session_state.query_history = []
+if 'current_view' not in st.session_state:
+    st.session_state.current_view = 'welcome'
 if 'cleaning_options' not in st.session_state:
     st.session_state.cleaning_options = {
         'remove_non_numeric': True,
@@ -120,8 +1047,8 @@ def clean_csv_data(df):
     
     return df_cleaned
 
-def load_csv_file(uploaded_file, clean_data=True, use_vector_db=True):
-    """Load a CSV file and ingest it with vector DB persistence"""
+def load_csv_file(uploaded_file, clean_data=True):
+    """Load a CSV file and ingest it"""
     try:
         df = pd.read_csv(uploaded_file)
         original_shape = df.shape
@@ -148,7 +1075,6 @@ def load_csv_file(uploaded_file, clean_data=True, use_vector_db=True):
             'original_shape': original_shape,
             'cleaned_shape': df.shape,
             'cleaned': clean_data,
-            'vector_db': use_vector_db,
             'type': 'csv'
         }
     except Exception as e:
@@ -160,7 +1086,7 @@ def load_csv_file(uploaded_file, clean_data=True, use_vector_db=True):
         }
 
 def load_document_file(uploaded_file):
-    """Load a document file (TXT/DOCX) and ingest it"""
+    """Load a document file (TXT/DOCX)"""
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix, mode='wb') as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
@@ -186,85 +1112,66 @@ def load_document_file(uploaded_file):
         }
 
 def display_results(result):
-    """Display query results in a formatted way"""
+    """Display query results"""
     if 'error' in result:
-        st.error(f"❌ Error: {result.get('details', result['error'])}")
-        
-        with st.expander("🔧 Troubleshooting Tips"):
-            st.markdown("""
-            **Common Issues:**
-            - **Malformed numeric data**: Enable data cleaning in the sidebar
-            - **Column names**: Ensure your query uses exact column names
-            - **Missing data**: Check if your CSV has the expected columns
-            - **Data format**: Verify numeric columns don't contain text
-            
-            **Tips:**
-            - Try simplifying your query
-            - Check the loaded file details in the sidebar
-            - Enable all cleaning options
-            - Check vector DB status
-            """)
+        st.error(f"❌ {result.get('details', result['error'])}")
         return
     
     metadata = result.get('metadata', {})
     intent = metadata.get('intent', '')
     
-    # Handle analysis queries (document_query)
+    # Document query
     if intent == 'document_query':
-        st.subheader("📊 Analysis Response")
         narrative = result.get('narrative', 'No response generated.')
-        st.markdown(narrative)
+        st.markdown(f'<div class="message-content">{narrative}</div>', unsafe_allow_html=True)
         
-        # Show retrieved chunks if available
         if 'result_table' in result and result['result_table']:
-            with st.expander("📑 Retrieved Analysis Sections", expanded=False):
+            with st.expander("📑 View detailed information", expanded=False):
                 for idx, chunk_data in enumerate(result['result_table'][:3], 1):
-                    st.markdown(f"**Section {idx}** (Relevance: {chunk_data.get('similarity_score', 'N/A')})")
+                    st.markdown(f"**Section {idx}**")
                     
                     if chunk_data.get('question'):
-                        st.info(f"**Q:** {chunk_data['question']}")
-                        st.success(f"**A:** {chunk_data['answer']}")
+                        st.info(f"❓ {chunk_data['question']}")
+                        st.success(f"✓ {chunk_data['answer']}")
                         if chunk_data.get('analysis'):
-                            st.warning(f"**Analysis:** {chunk_data['analysis']}")
+                            st.warning(f"📈 {chunk_data['analysis']}")
                     else:
                         st.text(chunk_data.get('content', '')[:500])
-                    st.markdown("---")
+                    
+                    if idx < 3:
+                        st.divider()
         
-        # Show stats
         numbers = result.get('numbers', {})
         if numbers:
-            with st.expander("📊 Query Statistics", expanded=False):
-                col1, col2 = st.columns(2)
-                with col1:
-                    if 'num_results' in numbers:
-                        st.metric("Results Found", numbers['num_results'])
-                with col2:
-                    if 'avg_similarity' in numbers:
-                        st.metric("Avg Relevance", f"{numbers['avg_similarity']:.3f}")
+            col1, col2 = st.columns(2)
+            with col1:
+                if 'num_results' in numbers:
+                    st.metric("Results Found", numbers['num_results'])
+            with col2:
+                if 'avg_similarity' in numbers:
+                    st.metric("Relevance", f"{numbers['avg_similarity']:.3f}")
         return
     
-    # Handle general queries
+    # General query
     if intent == 'general_query':
-        st.subheader("💬 Answer")
         narrative = result.get('narrative', 'No response generated.')
-        st.markdown(narrative)
+        st.markdown(f'<div class="message-content">{narrative}</div>', unsafe_allow_html=True)
         
         numbers = result.get('numbers', {})
-        if numbers and any(k in numbers for k in ['csv_files', 'document_files', 'total_rows']):
-            with st.expander("📊 Data Summary"):
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    if 'csv_files' in numbers:
-                        st.metric("CSV Files", numbers['csv_files'])
-                with col2:
-                    if 'document_files' in numbers:
-                        st.metric("Documents", numbers['document_files'])
-                with col3:
-                    if 'total_rows' in numbers:
-                        st.metric("Total Rows", numbers['total_rows'])
+        if numbers:
+            cols = st.columns(3)
+            if 'csv_files' in numbers:
+                with cols[0]:
+                    st.metric("CSV Files", numbers['csv_files'])
+            if 'document_files' in numbers:
+                with cols[1]:
+                    st.metric("Documents", numbers['document_files'])
+            if 'total_rows' in numbers:
+                with cols[2]:
+                    st.metric("Total Rows", numbers['total_rows'])
         return
     
-    # Handle analytical queries (existing code)
+    # Analytical queries
     numbers = result.get('numbers', {})
     
     if 'narrative' in result and result['narrative']:
@@ -273,7 +1180,7 @@ def display_results(result):
     col1, col2 = st.columns([2, 1])
     
     with col1:
-        st.subheader("📊 Query Results")
+        st.markdown('<div class="result-title">📊 Results</div>', unsafe_allow_html=True)
         
         if 'top_values' in numbers:
             values = numbers['top_values']
@@ -286,285 +1193,321 @@ def display_results(result):
                 })
                 st.dataframe(results_df, use_container_width=True)
             else:
-                st.metric("Result Value", values)
+                st.metric("Result", values)
         
         if 'result_table' in result and result['result_table']:
-            st.subheader("📋 Result Table")
             result_df = pd.DataFrame(result['result_table'])
             st.dataframe(result_df, use_container_width=True)
             
             csv = result_df.to_csv(index=False)
-            unique_key = f"download_button_{uuid.uuid4()}"
             st.download_button(
-                label="📥 Download Results as CSV",
+                label="📥 Download Results",
                 data=csv,
-                file_name="query_results.csv",
+                file_name="results.csv",
                 mime="text/csv",
-                key=unique_key
+                key=f"download_{uuid.uuid4()}"
             )
     
     with col2:
-        st.subheader("📈 Statistics")
+        st.markdown('<div class="result-title">📈 Statistics</div>', unsafe_allow_html=True)
         
-        stat_mapping = {
-            'average': ('Average', '📊'),
-            'min': ('Minimum', '⬇️'),
-            'max': ('Maximum', '⬆️'),
-            'sum': ('Sum', '➕'),
-            'count': ('Count', '🔢'),
-            'filtered_rows': ('Filtered Rows', '🔍'),
-            'total_rows': ('Total Rows', '📄')
-        }
+        stats = [
+            ('average', 'Average', '📊'),
+            ('min', 'Minimum', '⬇️'),
+            ('max', 'Maximum', '⬆️'),
+            ('sum', 'Total', '➕'),
+            ('count', 'Count', '🔢'),
+        ]
         
-        for key, (label, emoji) in stat_mapping.items():
+        for key, label, emoji in stats:
             if key in numbers:
                 value = numbers[key]
                 if isinstance(value, float):
-                    st.metric(f"{emoji} {label}", f"{value:.4f}")
+                    st.metric(f"{emoji} {label}", f"{value:.2f}")
                 else:
                     st.metric(f"{emoji} {label}", value)
 
-
-# Main app
 def main():
-    st.title("📊 Analytical AI Agent")
-    st.markdown("Upload CSV files and documents to run analytical queries across your data")
-    
-    # Sidebar for file upload and settings
+    # Sidebar - History and Settings
     with st.sidebar:
-        st.header("📁 File Management")
+        st.markdown('<div class="sidebar-header"><h2>💬 Conversations</h2></div>', unsafe_allow_html=True)
         
-        # Vector DB info
-        db_info = get_vector_db_info()
+        # New chat button
+        if st.button("➕ New Chat", use_container_width=True, type="primary"):
+            st.session_state.query_history = []
+            st.session_state.current_view = 'welcome'
+            st.rerun()
         
-        with st.expander("🗄️ Vector Database", expanded=False):
-            if db_info['exists']:
-                st.write(f"**Status:** 🟢 Active")
-                st.write(f"**Size:** {db_info['size_mb']:.2f} MB")
-                st.write(f"**Collections:** {db_info.get('collections', 'N/A')}")
-                st.caption(f"Path: `{db_info.get('path', 'N/A')}`")
-                
-                st.info("💡 Embeddings are persisted in the vector DB.")
-                
-                if st.button("🗑️ Clear Vector Database"):
-                    if clear_vector_db():
-                        st.success("✅ Vector DB cleared!")
-                        st.rerun()
-            else:
-                st.write(f"**Status:** ⚪ Not initialized")
-                st.info("Vector DB will be created on first file upload")
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        # Data cleaning options
-        with st.expander("🧹 Data Cleaning Options", expanded=True):
+        # History
+        if st.session_state.query_history:
+            st.markdown("### Recent")
+            for idx, item in enumerate(st.session_state.query_history):
+                query_preview = item['query'][:40] + "..." if len(item['query']) > 40 else item['query']
+                if st.button(query_preview, key=f"history_{idx}", use_container_width=True):
+                    st.session_state.current_view = 'chat'
+                    st.rerun()
+        
+        st.divider()
+        
+        # Settings
+        with st.expander("⚙️ Settings", expanded=False):
+            st.markdown("**Data Cleaning**")
             st.session_state.cleaning_options['remove_non_numeric'] = st.checkbox(
-                "Remove non-numeric characters",
-                value=True,
-                help="Clean text from numeric columns"
+                "Clean numeric data", value=True
             )
             st.session_state.cleaning_options['handle_concatenated'] = st.checkbox(
-                "Handle concatenated numbers",
-                value=True,
-                help="Fix numbers stuck together"
+                "Fix merged numbers", value=True
             )
             st.session_state.cleaning_options['convert_negative'] = st.checkbox(
-                "Fix negative sign position",
-                value=True,
-                help="Convert '0.069-' to '-0.069'"
+                "Fix negative signs", value=True
             )
             
-            clean_enabled = any(st.session_state.cleaning_options.values())
-        
-        # File upload tabs
-        tab1, tab2 = st.tabs(["📊 CSV Files", "📄 Documents"])
-        
-        with tab1:
-            uploaded_csvs = st.file_uploader(
-                "Upload CSV Files",
-                type=['csv'],
-                accept_multiple_files=True,
-                help="Upload one or more CSV files"
-            )
+            st.markdown("<br>", unsafe_allow_html=True)
             
-            if uploaded_csvs:
-                if st.button("📤 Load CSV Files", type="primary"):
-                    st.session_state.loaded_files = []
-                    
-                    with st.spinner("Loading CSV files..."):
-                        progress_bar = st.progress(0)
-                        
-                        for idx, file in enumerate(uploaded_csvs):
-                            file.seek(0)
-                            result = load_csv_file(file, clean_data=clean_enabled)
-                            st.session_state.loaded_files.append(result)
-                            progress_bar.progress((idx + 1) / len(uploaded_csvs))
-                    
-                    success_count = sum(1 for f in st.session_state.loaded_files if f['status'] == 'success')
-                    if success_count > 0:
-                        st.success(f"✅ Loaded {success_count} CSV file(s)")
-                    st.rerun()
+            # Database info
+            db_info = get_vector_db_info()
+            if db_info['exists']:
+                st.markdown("**Database**")
+                st.caption(f"Size: {db_info['size_mb']:.1f} MB")
+                if st.button("Clear Database", use_container_width=True, key="clear_db"):
+                    if clear_vector_db():
+                        st.success("Database cleared")
+                        st.rerun()
         
-        with tab2:
-            uploaded_docs = st.file_uploader(
-                "Upload Documents",
-                type=['txt', 'docx'],
-                accept_multiple_files=True,
-                help="Upload TXT or DOCX files"
-            )
+        st.divider()
+        
+        # Loaded files
+        if st.session_state.loaded_files or st.session_state.loaded_documents:
+            st.markdown("### 📁 Loaded Files")
             
-            if uploaded_docs:
-                if st.button("📤 Load Documents", type="primary"):
-                    st.session_state.loaded_documents = []
-                    
-                    with st.spinner("Loading documents..."):
-                        progress_bar = st.progress(0)
-                        
-                        for idx, file in enumerate(uploaded_docs):
-                            file.seek(0)
-                            result = load_document_file(file)
-                            st.session_state.loaded_documents.append(result)
-                            progress_bar.progress((idx + 1) / len(uploaded_docs))
-                    
-                    success_count = sum(1 for f in st.session_state.loaded_documents if f['status'] == 'success')
-                    if success_count > 0:
-                        st.success(f"✅ Loaded {success_count} document(s)")
-                    st.rerun()
-        
-        # Display loaded CSV files
-        if st.session_state.loaded_files:
-            st.subheader("📂 Loaded CSV Files")
             for file_info in st.session_state.loaded_files:
                 if file_info['status'] == 'success':
-                    with st.expander(f"✅ {file_info['name']}"):
-                        st.write(f"**Rows:** {file_info['metadata'].num_rows}")
-                        st.write(f"**Columns:** {file_info['metadata'].num_columns}")
-                        st.write(f"**File ID:** `{file_info['file_id']}`")
-                        
-                        if file_info.get('cleaned'):
-                            st.info(f"🧹 Data cleaned")
-                        
-                        if file_info['metadata'].columns:
-                            st.write("**Column Names:**")
-                            for col in file_info['metadata'].columns[:5]:
-                                st.text(f"  • {col}")
-                            if len(file_info['metadata'].columns) > 5:
-                                st.write(f"... and {len(file_info['metadata'].columns) - 5} more")
-                else:
-                    with st.expander(f"❌ {file_info['name']}", expanded=True):
-                        st.error(f"**Error:** {file_info['error']}")
-        
-        # Display loaded documents
-        if st.session_state.loaded_documents:
-            st.subheader("📄 Loaded Documents")
+                    st.markdown(f'<div class="file-badge">📊 {file_info["name"]}</div>', unsafe_allow_html=True)
+            
             for doc_info in st.session_state.loaded_documents:
                 if doc_info['status'] == 'success':
-                    with st.expander(f"✅ {doc_info['name']}"):
-                        st.write(f"**Type:** {doc_info['metadata'].document_type.upper()}")
-                        st.write(f"**Characters:** {doc_info['metadata'].num_characters:,}")
-                        st.write(f"**Chunks:** {doc_info['metadata'].num_chunks}")
-                        st.write(f"**Q&A Pairs:** {doc_info['metadata'].num_qa_pairs}")
-                        st.write(f"**File ID:** `{doc_info['file_id']}`")
-                        
-                        if doc_info['metadata'].has_questions:
-                            st.success("📋 Contains Q&A pairs")
-                else:
-                    with st.expander(f"❌ {doc_info['name']}", expanded=True):
-                        st.error(f"**Error:** {doc_info['error']}")
-        
-        # Clear all button
-        if st.session_state.loaded_files or st.session_state.loaded_documents:
-            if st.button("🗑️ Clear All Files"):
+                    st.markdown(f'<div class="file-badge">📄 {doc_info["name"]}</div>', unsafe_allow_html=True)
+            
+            if st.button("Clear All Files", use_container_width=True, key="clear_files"):
                 st.session_state.loaded_files = []
                 st.session_state.loaded_documents = []
                 st.rerun()
     
-    # Main query interface
+    # Main content
     if not st.session_state.loaded_files and not st.session_state.loaded_documents:
-        st.info("👈 Please upload CSV files or documents using the sidebar to get started")
+        # Welcome screen with upload
+        st.markdown("""
+        <div class="main-header">
+            <h1>🤖 Trust First AI Analyst</h1>
+            <p>Upload your files and start asking questions</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Show example queries
+        # Upload section
+        st.markdown("""
+        <div class="upload-container">
+            <div class="upload-icon">📁</div>
+            <div class="upload-title">Upload Your Files</div>
+            <div class="upload-subtitle">Support for CSV files and documents (TXT, DOCX)</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        tab1, tab2 = st.tabs(["CSV Files", "Documents"])
+        
+        with tab1:
+            uploaded_csvs = st.file_uploader(
+                "Choose CSV files",
+                type=['csv'],
+                accept_multiple_files=True,
+                key="csv_upload"
+            )
+            
+            if uploaded_csvs:
+                if st.button("Load CSV Files", type="primary", use_container_width=True):
+                    st.session_state.loaded_files = []
+                    progress = st.progress(0)
+                    
+                    clean_enabled = any(st.session_state.cleaning_options.values())
+                    
+                    for idx, file in enumerate(uploaded_csvs):
+                        file.seek(0)
+                        result = load_csv_file(file, clean_data=clean_enabled)
+                        st.session_state.loaded_files.append(result)
+                        progress.progress((idx + 1) / len(uploaded_csvs))
+                    
+                    success = sum(1 for f in st.session_state.loaded_files if f['status'] == 'success')
+                    if success > 0:
+                        st.success(f"✓ Loaded {success} file(s)")
+                        st.session_state.current_view = 'chat'
+                        st.rerun()
+        
+        with tab2:
+            uploaded_docs = st.file_uploader(
+                "Choose document files",
+                type=['txt', 'docx'],
+                accept_multiple_files=True,
+                key="doc_upload"
+            )
+            
+            if uploaded_docs:
+                if st.button("Load Documents", type="primary", use_container_width=True):
+                    st.session_state.loaded_documents = []
+                    progress = st.progress(0)
+                    
+                    for idx, file in enumerate(uploaded_docs):
+                        file.seek(0)
+                        result = load_document_file(file)
+                        st.session_state.loaded_documents.append(result)
+                        progress.progress((idx + 1) / len(uploaded_docs))
+                    
+                    success = sum(1 for f in st.session_state.loaded_documents if f['status'] == 'success')
+                    if success > 0:
+                        st.success(f"✓ Loaded {success} document(s)")
+                        st.session_state.current_view = 'chat'
+                        st.rerun()
+        
+        # Welcome cards
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("### What can I help you with?")
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("💡 CSV Query Examples")
             st.markdown("""
-            - `Find the lowest value of Amplitude`
-            - `What is the average of Sales column?`
-            - `Show me the maximum temperature`
-            - `Sort by price in descending order`
-            - `Count rows where Status is Active`
-            """)
+            <div class="welcome-card">
+                <div class="card-icon"></div>
+                <div class="card-title">Analyze CSV Data</div>
+                <div class="card-description">
+                    Upload CSV files and ask questions about your data. Get insights, statistics, and visualizations.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("""
+            <div class="welcome-card">
+                <div class="card-icon"></div>
+                <div class="card-title">Find Insights</div>
+                <div class="card-description">
+                    Discover patterns, trends, and outliers in your data with natural language queries.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         
         with col2:
-            st.subheader("📄 Document Query Examples")
             st.markdown("""
-            - `How much is the rise in envelope value?`
-            - `Explain the analysis for kurtosis`
-            - `What does the document say about harmonic energy?`
-            - `Show Q1 from the document`
-            - `Compare current vs best performance`
-            """)
-        
-        st.subheader("🗄️ Vector Database Persistence")
-        st.markdown("""
-        **Benefits:**
-        - ✅ Embeddings saved in vector DB
-        - ✅ Fast semantic search
-        - ✅ No repeated API calls
-        - ✅ Production-ready architecture
-        """)
+            <div class="welcome-card">
+                <div class="card-icon"></div>
+                <div class="card-title">Search Documents</div>
+                <div class="card-description">
+                    Upload documents and get answers from your content. Perfect for research and analysis.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("""
+            <div class="welcome-card">
+                <div class="card-icon"></div>
+                <div class="card-title">Quick Results</div>
+                <div class="card-description">
+                    Get instant answers with AI-powered analysis. No complex queries or coding required.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    
     else:
-        st.subheader("🔎 Query Your Data")
+        # Chat interface with loaded files
+        st.markdown("""
+        <div class="main-header">
+            <h1>🤖 Trust First AI Analyst</h1>
+            <p>Ask me anything about your data</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # Query input
+        # Display conversation history
+        if st.session_state.query_history:
+            for idx, item in enumerate(st.session_state.query_history):
+                # User message
+                st.markdown(f"""
+                <div class="message-container user-message">
+                    <div class="message-header">You</div>
+                    <div class="message-content">{item['query']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # AI response
+                st.markdown("""
+                <div class="message-container">
+                    <div class="message-header">🤖 AI Analyst</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                with st.container():
+                    display_results(item['result'])
+        else:
+            # Show example queries if no history
+            st.markdown("### 💡 Example Questions")
+            
+            examples = [
+                "What is the average of all values?",
+                "Show me the top 5 highest values",
+                "What is the minimum and maximum?",
+                "Summarize the main points from my document",
+                "How many rows are in the dataset?"
+            ]
+            
+            for example in examples:
+                st.markdown(f'<div class="example-query">💬 {example}</div>', unsafe_allow_html=True)
+        
+        # Input area at the bottom
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        st.markdown('<div class="chat-input-container">', unsafe_allow_html=True)
+        
         query = st.text_area(
-            "Enter your query:",
+            "Message AI Analyst...",
             height=100,
-            placeholder="e.g., How much is the rise in current envelope's absolute value? Or: Find the lowest amplitude value",
-            help="Ask questions about your CSV data or documents"
+            placeholder="Type your question here...",
+            label_visibility="collapsed",
+            key="query_input"
         )
         
-        col1, col2, col3 = st.columns([1, 1, 4])
+        # Buttons Row (Send + Clear)
+        st.markdown('<div class="chat-button-row">', unsafe_allow_html=True)
+
+        send_button = st.button("Send", type="primary")
+        st.markdown('<div class="secondary-button">', unsafe_allow_html=True)
+        clear_button = st.button("Clear")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
         
-        with col1:
-            run_query = st.button("▶️ Run Query", type="primary")
+        st.markdown('</div>', unsafe_allow_html=True)
         
-        with col2:
-            if st.button("🗑️ Clear Results"):
-                st.session_state.query_history = []
-                st.rerun()
-        
-        if run_query and query:
-            with st.spinner("Processing query..."):
+        # Handle query submission
+        if send_button and query:
+            with st.spinner("🤔 Thinking..."):
                 try:
                     result = analytical_agent.process_query(query)
                     
-                    st.session_state.query_history.insert(0, {
+                    st.session_state.query_history.append({
                         'query': query,
                         'result': result
                     })
                     
-                    st.session_state.query_history = st.session_state.query_history[:5]
+                    # Keep only last 10 conversations
+                    st.session_state.query_history = st.session_state.query_history[-10:]
+                    
+                    st.rerun()
                     
                 except Exception as e:
-                    st.error(f"❌ Error processing query: {str(e)}")
+                    st.error(f"❌ Error: {str(e)}")
         
-        # Display current results
-        if st.session_state.query_history:
-            st.markdown("---")
-            
-            latest = st.session_state.query_history[0]
-            st.subheader(f"Query: {latest['query']}")
-            display_results(latest['result'])
-            
-            # Show query history
-            if len(st.session_state.query_history) > 1:
-                st.markdown("---")
-                st.subheader("📜 Query History")
-                
-                for idx, item in enumerate(st.session_state.query_history[1:], 1):
-                    with st.expander(f"Query {idx}: {item['query'][:50]}..."):
-                        st.write(f"**Full Query:** {item['query']}")
-                        display_results(item['result'])
+        if clear_button:
+            st.session_state.query_history = []
+            st.rerun()
 
 if __name__ == "__main__":
     main()
